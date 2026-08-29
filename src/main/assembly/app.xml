@@ -1,0 +1,56 @@
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.2.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.2.0 http://maven.apache.org/xsd/assembly-2.2.0.xsd">
+  <id>app</id>
+  <formats>
+    <format>dir</format>
+  </formats>
+  <includeBaseDirectory>true</includeBaseDirectory>
+  <baseDirectory>app</baseDirectory>
+
+  <fileSets>
+    <!-- Lore data (generated XML + enums/ + labels/ + maps/) from lotro-data -->
+    <fileSet>
+      <directory>${project.basedir}/../lotro-data/lore</directory>
+      <outputDirectory>data/lore</outputDirectory>
+    </fileSet>
+
+    <!-- Items DB (not part of lotro-data) -->
+    <fileSet>
+      <directory>${project.basedir}/../lotro-items-db</directory>
+      <outputDirectory>data/lore</outputDirectory>
+      <includes>
+        <include>items.xml</include>
+      </includes>
+    </fileSet>
+
+    <!-- Config -->
+    <fileSet>
+      <directory>${project.basedir}/../lotro-companion/data</directory>
+      <outputDirectory>data</outputDirectory>
+    </fileSet>
+
+    <!-- Runtime locations override (patches/ takes priority over jar) -->
+    <fileSet>
+      <directory>${project.basedir}/../lotro-companion/src/main/assembly</directory>
+      <outputDirectory>lib/patches</outputDirectory>
+      <includes>
+        <include>locations.properties</include>
+      </includes>
+    </fileSet>
+
+    <!-- Icon archives built by the antrun step -->
+    <fileSet>
+      <directory>${project.build.directory}/iconzips</directory>
+      <outputDirectory>lib</outputDirectory>
+    </fileSet>
+  </fileSets>
+
+  <dependencySets>
+    <dependencySet>
+      <outputDirectory>lib</outputDirectory>
+      <useProjectArtifact>false</useProjectArtifact>
+      <scope>runtime</scope>
+    </dependencySet>
+  </dependencySets>
+</assembly>

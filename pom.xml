@@ -1,0 +1,119 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>lotro-companion-release</artifactId>
+  <packaging>pom</packaging>
+  <version>24.9</version>
+  <name>lotro-companion-release</name>
+  <description>
+    Reproduces the LotRO Companion "app" distribution layout with Maven,
+    mirroring the author's release process (mvn dependency:copy-dependencies +
+    releng/update_data.sh + icon archives packaging) as a single Maven build.
+  </description>
+  <parent>
+    <groupId>com.dam.delta4j</groupId>
+    <artifactId>maven-definitions</artifactId>
+    <version>2.1</version>
+  </parent>
+
+  <dependencies>
+    <!-- Pulls the app jar + all its runtime dependencies into lib/ -->
+    <dependency>
+      <groupId>com.dam.delta4j</groupId>
+      <artifactId>delta-lotro-companion</artifactId>
+      <version>24.9</version>
+    </dependency>
+    <!-- Additional jars present in the author's release lib/ (import from client, JSON, statistics) -->
+    <dependency>
+      <groupId>com.dam.delta4j</groupId>
+      <artifactId>delta-lotro-data-extractor</artifactId>
+      <version>5.28</version>
+    </dependency>
+    <dependency>
+      <groupId>com.dam.delta4j</groupId>
+      <artifactId>delta-json</artifactId>
+      <version>1.1.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.dam.delta4j</groupId>
+      <artifactId>delta-utils-statistics</artifactId>
+      <version>1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>net.java.dev.jna</groupId>
+      <artifactId>jna</artifactId>
+      <version>5.7.0</version>
+    </dependency>
+    <dependency>
+      <groupId>net.java.dev.jna</groupId>
+      <artifactId>jna-platform</artifactId>
+      <version>5.7.0</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- 1. Build the icon archives (lib/*.zip) from the lotro-icons/lotro-relics repos -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <execution>
+            <id>build-icon-zips</id>
+            <phase>process-resources</phase>
+            <configuration>
+              <target>
+                <mkdir dir="${project.build.directory}/iconzips"/>
+                <zip destfile="${project.build.directory}/iconzips/allegianceIcons.zip" basedir="${project.basedir}/../lotro-icons/allegiances"/>
+                <zip destfile="${project.build.directory}/iconzips/areaIcons.zip" basedir="${project.basedir}/../lotro-icons/areas"/>
+                <zip destfile="${project.build.directory}/iconzips/birds.zip" basedir="${project.basedir}/../lotro-icons/birds"/>
+                <zip destfile="${project.build.directory}/iconzips/classes.zip" basedir="${project.basedir}/../lotro-icons/classes"/>
+                <zip destfile="${project.build.directory}/iconzips/effectIcons.zip" basedir="${project.basedir}/../lotro-icons/effects"/>
+                <zip destfile="${project.build.directory}/iconzips/emoteIcons.zip" basedir="${project.basedir}/../lotro-icons/emotes"/>
+                <zip destfile="${project.build.directory}/iconzips/hobbyIcons.zip" basedir="${project.basedir}/../lotro-icons/hobbies"/>
+                <zip destfile="${project.build.directory}/iconzips/housing.zip" basedir="${project.basedir}/../lotro-icons/housing"/>
+                <zip destfile="${project.build.directory}/iconzips/itemIcons.zip" basedir="${project.basedir}/../lotro-icons/items"/>
+                <zip destfile="${project.build.directory}/iconzips/legaciesIcons.zip" basedir="${project.basedir}/../lotro-icons/legacies"/>
+                <zip destfile="${project.build.directory}/iconzips/miscIcons.zip" basedir="${project.basedir}/../lotro-icons/frames"/>
+                <zip destfile="${project.build.directory}/iconzips/perkIcons.zip" basedir="${project.basedir}/../lotro-icons/perks"/>
+                <zip destfile="${project.build.directory}/iconzips/races.zip" basedir="${project.basedir}/../lotro-icons/races"/>
+                <copy file="${project.basedir}/../lotro-relics/relicIcons.zip" tofile="${project.build.directory}/iconzips/relicIcons.zip" failonerror="false"/>
+                <zip destfile="${project.build.directory}/iconzips/skillIcons.zip" basedir="${project.basedir}/../lotro-icons/skills"/>
+                <zip destfile="${project.build.directory}/iconzips/sockets.zip" basedir="${project.basedir}/../lotro-icons/sockets"/>
+                <zip destfile="${project.build.directory}/iconzips/titleIcons.zip" basedir="${project.basedir}/../lotro-icons/titles"/>
+                <zip destfile="${project.build.directory}/iconzips/traitIcons.zip" basedir="${project.basedir}/../lotro-icons/traits"/>
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- 2. Assemble the app/ directory matching the reference release -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>3.7.1</version>
+        <executions>
+          <execution>
+            <id>assemble-app</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <descriptors>
+                <descriptor>src/main/assembly/app.xml</descriptor>
+              </descriptors>
+              <finalName>app</finalName>
+              <appendAssemblyId>false</appendAssemblyId>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
