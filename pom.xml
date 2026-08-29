@@ -16,6 +16,11 @@
     <version>2.1</version>
   </parent>
 
+  <properties>
+    <!-- The bundled runtime is a pre-built, kept copy under src/main/runtime
+         (built once with jlink; no jlink needed at build time). -->
+  </properties>
+
   <dependencies>
     <!-- Pulls the app jar + all its runtime dependencies into lib/ -->
     <dependency>
@@ -92,7 +97,9 @@
         </executions>
       </plugin>
 
-      <!-- 2. Assemble the app/ directory matching the reference release -->
+      <!-- 2. (runtime is a pre-built copy under src/main/runtime, copied by the assembly) -->
+
+      <!-- 3. Assemble the app/ directory matching the reference release -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
