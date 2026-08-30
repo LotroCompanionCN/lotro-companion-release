@@ -15,6 +15,11 @@
       <outputDirectory>/</outputDirectory>
       <destName>run.bat</destName>
     </file>
+    <file>
+      <source>${project.basedir}/../lotro-companion/src/main/assembly/run-console.bat</source>
+      <outputDirectory>/</outputDirectory>
+      <destName>run-console.bat</destName>
+    </file>
   </files>
 
   <fileSets>

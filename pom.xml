@@ -54,15 +54,29 @@
       <artifactId>jna-platform</artifactId>
       <version>5.7.0</version>
     </dependency>
+    <!-- Built before release assembly; copied to lib/patches/ in verify -->
+    <dependency>
+      <groupId>com.lotrocompanioncn</groupId>
+      <artifactId>lotro-core-overrides</artifactId>
+      <version>1.0.0</version>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
 
   <build>
     <plugins>
-      <!-- 1. Build the icon archives (lib/*.zip) from the lotro-icons/lotro-relics repos -->
+      <!-- 1. Antrun tasks: icon archives packaging (process-resources) + compression (verify) -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
         <version>3.1.0</version>
+        <dependencies>
+          <dependency>
+            <groupId>org.openjdk.nashorn</groupId>
+            <artifactId>nashorn-core</artifactId>
+            <version>15.4</version>
+          </dependency>
+        </dependencies>
         <executions>
           <execution>
             <id>build-icon-zips</id>
@@ -94,40 +108,6 @@
               <goal>run</goal>
             </goals>
           </execution>
-        </executions>
-      </plugin>
-
-      <!-- 2. (runtime is a pre-built copy under src/main/runtime, copied by the assembly) -->
-
-      <!-- 3. Assemble the app/ directory matching the reference release -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>3.7.1</version>
-        <executions>
-          <execution>
-            <id>assemble-app</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
-              <descriptors>
-                <descriptor>src/main/assembly/app.xml</descriptor>
-              </descriptors>
-              <finalName>app</finalName>
-              <appendAssemblyId>false</appendAssemblyId>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <!-- 4. Post-assembly data compression + overrides injection -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <version>3.1.0</version>
-        <executions>
           <execution>
             <id>compress-lore-data</id>
             <phase>verify</phase>
@@ -187,9 +167,34 @@
                   ]]>
                 </script>
                 <copy file="${project.basedir}/../lotro-core-overrides/target/lotro-core-overrides-1.0.0.jar"
-                      tofile="${project.build.directory}/app/lib/patches/lotro-core-overrides-1.0.0.jar"
+                      todir="${project.build.directory}/app/lib/patches"
                       failonerror="false"/>
               </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- 2. (runtime is a pre-built copy under src/main/runtime, copied by the assembly) -->
+
+      <!-- 3. Assemble the app/ directory matching the reference release -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>3.7.1</version>
+        <executions>
+          <execution>
+            <id>assemble-app</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <descriptors>
+                <descriptor>src/main/assembly/app.xml</descriptor>
+              </descriptors>
+              <finalName>app</finalName>
+              <appendAssemblyId>false</appendAssemblyId>
             </configuration>
           </execution>
         </executions>
