@@ -161,8 +161,63 @@
                         }
                       }
                     }
+
+                    function convertMapImages(mapsSubdir) {
+                      if (!mapsSubdir.exists()) return;
+                      var mapFiles = mapsSubdir.listFiles();
+                      if (mapFiles == null) return;
+
+                      var ImageIO = Java.type("javax.imageio.ImageIO");
+                      var ImageWriteParam = Java.type("javax.imageio.ImageWriteParam");
+                      var IIOImage = Java.type("javax.imageio.IIOImage");
+                      var FileImageOutputStream = Java.type("javax.imageio.stream.FileImageOutputStream");
+                      var BufferedImage = Java.type("java.awt.image.BufferedImage");
+                      var Color = Java.type("java.awt.Color");
+
+                      var writers = ImageIO.getImageWritersByFormatName("jpg");
+                      if (!writers.hasNext()) {
+                        project.log("No JPEG writer found!");
+                        return;
+                      }
+                      var writer = writers.next();
+                      var writeParam = writer.getDefaultWriteParam();
+                      writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                      writeParam.setCompressionQuality(0.85);
+
+                      var count = 0;
+                      for (var i = 0; i < mapFiles.length; i++) {
+                        var f = mapFiles[i];
+                        if (f.isFile() && f.getName().endsWith(".png")) {
+                          var name = f.getName();
+                          var outName = name.substring(0, name.length - 4) + ".jpg";
+                          var outFile = new File(mapsSubdir, outName);
+                          try {
+                            var srcImg = ImageIO.read(f);
+                            if (srcImg != null) {
+                              var rgbImg = new BufferedImage(srcImg.getWidth(), srcImg.getHeight(), BufferedImage.TYPE_INT_RGB);
+                              var g = rgbImg.createGraphics();
+                              g.drawImage(srcImg, 0, 0, Color.WHITE, null);
+                              g.dispose();
+
+                              var fios = new FileImageOutputStream(outFile);
+                              writer.setOutput(fios);
+                              writer.write(null, new IIOImage(rgbImg, null, null), writeParam);
+                              fios.close();
+                              f.delete();
+                              count++;
+                            }
+                          } catch (err) {
+                            project.log("Failed to convert " + f + ": " + err);
+                          }
+                        }
+                      }
+                      writer.dispose();
+                      project.log("Converted " + count + " map images to JPEG (.jpg).");
+                    }
+
                     if (root.exists()) {
                       gzipDir(root);
+                      convertMapImages(new File(mapsDir, "maps"));
                     }
                   ]]>
                 </script>
