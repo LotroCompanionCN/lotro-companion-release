@@ -121,6 +121,66 @@
           </execution>
         </executions>
       </plugin>
+
+      <!-- 4. Post-assembly data compression + overrides injection -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <execution>
+            <id>compress-lore-data</id>
+            <phase>install</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <script language="javascript">
+                  <![CDATA[
+                    var File = Java.type("java.io.File");
+                    var FileInputStream = Java.type("java.io.FileInputStream");
+                    var FileOutputStream = Java.type("java.io.FileOutputStream");
+                    var BufferedInputStream = Java.type("java.io.BufferedInputStream");
+                    var GZIPOutputStream = Java.type("java.util.zip.GZIPOutputStream");
+
+                    var root = new File(project.getProperty("project.build.directory"), "app/data/lore");
+                    function gzipDir(dir) {
+                      var files = dir.listFiles();
+                      if (files == null) return;
+                      for (var i = 0; i < files.length; i++) {
+                        var f = files[i];
+                        if (f.isDirectory()) {
+                          gzipDir(f);
+                        } else if (f.isFile() && f.getName().endsWith(".xml")) {
+                          var outFile = new File(f.getParentFile(), f.getName() + ".gz");
+                          var is = new BufferedInputStream(new FileInputStream(f));
+                          var os = new GZIPOutputStream(new FileOutputStream(outFile));
+                          var buf = java.lang.reflect.Array.newInstance(java.lang.Byte.TYPE, 65536);
+                          var n;
+                          while ((n = is.read(buf)) != -1) {
+                            os.write(buf, 0, n);
+                          }
+                          is.close();
+                          os.close();
+                          f.delete();
+                          project.log("gzipped: " + outFile);
+                        }
+                      }
+                    }
+                    if (root.exists()) {
+                      gzipDir(root);
+                    }
+                  ]]>
+                </script>
+                <copy file="${project.basedir}/../lotro-core-overrides/target/lotro-core-overrides-1.0.0.jar"
+                      tofile="${project.build.directory}/app/lib/patches/lotro-core-overrides-1.0.0.jar"
+                      failonerror="false"/>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 </project>
