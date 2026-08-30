@@ -130,7 +130,7 @@
         <executions>
           <execution>
             <id>compress-lore-data</id>
-            <phase>install</phase>
+            <phase>verify</phase>
             <goals>
               <goal>run</goal>
             </goals>
@@ -145,6 +145,19 @@
                     var GZIPOutputStream = Java.type("java.util.zip.GZIPOutputStream");
 
                     var root = new File(project.getProperty("project.build.directory"), "app/data/lore");
+
+                    var mapsDir = new File(root, "maps");
+                    var gitignore = new File(mapsDir, ".gitignore");
+                    if (gitignore.exists()) { gitignore.delete(); project.log("removed: " + gitignore); }
+                    var githubDir = new File(mapsDir, ".github");
+                    if (githubDir.exists()) {
+                      var wf = new File(githubDir, "workflows/sync-upstream.yml");
+                      if (wf.exists()) { wf.delete(); project.log("removed: " + wf); }
+                      new File(githubDir, "workflows").delete();
+                      githubDir.delete();
+                      project.log("removed: " + githubDir);
+                    }
+
                     function gzipDir(dir) {
                       var files = dir.listFiles();
                       if (files == null) return;
