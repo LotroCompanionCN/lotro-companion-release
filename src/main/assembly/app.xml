@@ -53,16 +53,14 @@
       </includes>
     </fileSet>
 
-    <!-- Icon archives built by the antrun step -->
-    <fileSet>
-      <directory>${project.build.directory}/iconzips</directory>
-      <outputDirectory>lib</outputDirectory>
-    </fileSet>
-
-    <!-- Slim bundled runtime (JRE), pre-built and kept under src/main/runtime -->
+    <!-- Slim bundled runtime (JRE), pre-built and kept under src/main/runtime (exclude unnecessary static libs/tools) -->
     <fileSet>
       <directory>${project.basedir}/src/main/runtime</directory>
       <outputDirectory>runtime</outputDirectory>
+      <excludes>
+        <exclude>lib/*.lib</exclude>
+        <exclude>bin/keytool.exe</exclude>
+      </excludes>
     </fileSet>
   </fileSets>
 

@@ -65,7 +65,7 @@
 
   <build>
     <plugins>
-      <!-- 1. Antrun tasks: icon archives packaging (process-resources) + compression (verify) -->
+      <!-- 1. Antrun tasks: compression and post-processing (verify) -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
@@ -78,36 +78,6 @@
           </dependency>
         </dependencies>
         <executions>
-          <execution>
-            <id>build-icon-zips</id>
-            <phase>process-resources</phase>
-            <configuration>
-              <target>
-                <mkdir dir="${project.build.directory}/iconzips"/>
-                <zip destfile="${project.build.directory}/iconzips/allegianceIcons.zip" basedir="${project.basedir}/../lotro-icons/allegiances"/>
-                <zip destfile="${project.build.directory}/iconzips/areaIcons.zip" basedir="${project.basedir}/../lotro-icons/areas"/>
-                <zip destfile="${project.build.directory}/iconzips/birds.zip" basedir="${project.basedir}/../lotro-icons/birds"/>
-                <zip destfile="${project.build.directory}/iconzips/classes.zip" basedir="${project.basedir}/../lotro-icons/classes"/>
-                <zip destfile="${project.build.directory}/iconzips/effectIcons.zip" basedir="${project.basedir}/../lotro-icons/effects"/>
-                <zip destfile="${project.build.directory}/iconzips/emoteIcons.zip" basedir="${project.basedir}/../lotro-icons/emotes"/>
-                <zip destfile="${project.build.directory}/iconzips/hobbyIcons.zip" basedir="${project.basedir}/../lotro-icons/hobbies"/>
-                <zip destfile="${project.build.directory}/iconzips/housing.zip" basedir="${project.basedir}/../lotro-icons/housing"/>
-                <zip destfile="${project.build.directory}/iconzips/itemIcons.zip" basedir="${project.basedir}/../lotro-icons/items"/>
-                <zip destfile="${project.build.directory}/iconzips/legaciesIcons.zip" basedir="${project.basedir}/../lotro-icons/legacies"/>
-                <zip destfile="${project.build.directory}/iconzips/miscIcons.zip" basedir="${project.basedir}/../lotro-icons/frames"/>
-                <zip destfile="${project.build.directory}/iconzips/perkIcons.zip" basedir="${project.basedir}/../lotro-icons/perks"/>
-                <zip destfile="${project.build.directory}/iconzips/races.zip" basedir="${project.basedir}/../lotro-icons/races"/>
-                <copy file="${project.basedir}/../lotro-relics/relicIcons.zip" tofile="${project.build.directory}/iconzips/relicIcons.zip" failonerror="false"/>
-                <zip destfile="${project.build.directory}/iconzips/skillIcons.zip" basedir="${project.basedir}/../lotro-icons/skills"/>
-                <zip destfile="${project.build.directory}/iconzips/sockets.zip" basedir="${project.basedir}/../lotro-icons/sockets"/>
-                <zip destfile="${project.build.directory}/iconzips/titleIcons.zip" basedir="${project.basedir}/../lotro-icons/titles"/>
-                <zip destfile="${project.build.directory}/iconzips/traitIcons.zip" basedir="${project.basedir}/../lotro-icons/traits"/>
-              </target>
-            </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
-          </execution>
           <execution>
             <id>compress-lore-data</id>
             <phase>verify</phase>
@@ -145,7 +115,7 @@
                         var f = files[i];
                         if (f.isDirectory()) {
                           gzipDir(f);
-                        } else if (f.isFile() && f.getName().endsWith(".xml")) {
+                        } else if (f.isFile() && (f.getName().endsWith(".xml") || f.getName().endsWith(".bin"))) {
                           var outFile = new File(f.getParentFile(), f.getName() + ".gz");
                           var is = new BufferedInputStream(new FileInputStream(f));
                           var os = new GZIPOutputStream(new FileOutputStream(outFile));
@@ -182,7 +152,7 @@
                       var writer = writers.next();
                       var writeParam = writer.getDefaultWriteParam();
                       writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-                      writeParam.setCompressionQuality(0.85);
+                      writeParam.setCompressionQuality(0.78);
 
                       var count = 0;
                       for (var i = 0; i < mapFiles.length; i++) {
